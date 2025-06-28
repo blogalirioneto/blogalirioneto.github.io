@@ -324,16 +324,79 @@
       border-radius: 20px;
       text-align: center;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.8s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .auth-required h2 {
       color: #333;
       margin-bottom: 20px;
+      font-size: 2em;
     }
 
     .auth-required p {
       color: #666;
       margin-bottom: 30px;
+      font-size: 1.1em;
+    }
+
+    .auth-required .btn {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      padding: 20px 40px;
+      font-size: 18px;
+      border-radius: 15px;
+      text-decoration: none;
+      display: inline-flex;
+      transition: all 0.3s ease;
+    }
+
+    .auth-required .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
+    }
+
+    .page-loading {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 9999;
+      transition: opacity 0.5s ease;
+    }
+
+    .page-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .page-loading .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      margin-bottom: 20px;
+    }
+
+    .page-loading p {
+      color: white;
+      font-size: 1.2em;
+      font-weight: 500;
     }
 
     @media (max-width: 768px) {
@@ -362,10 +425,24 @@
       .footer-content {
         padding: 20px 15px;
       }
+
+      .auth-required {
+        padding: 30px 20px;
+      }
+
+      .auth-required h2 {
+        font-size: 1.6em;
+      }
     }
   </style>
 </head>
 <body>
+  <!-- Loading Screen -->
+  <div class="page-loading" id="page-loading">
+    <div class="spinner"></div>
+    <p>Verificando autenticação...</p>
+  </div>
+
   <div class="container">
     <header class="header">
       <div class="user-info" id="user-info" style="display: none;">
@@ -469,13 +546,13 @@
       </section>
     </div>
 
-    <div id="auth-required" class="auth-required">
+    <div id="auth-required" class="auth-required" style="display: none;">
       <h2><i class="fas fa-lock"></i> Acesso Restrito</h2>
-      <p>Você precisa estar logado para acessar o blog.</p>
-      <button class="btn" onclick="redirectToLogin()">
+      <p>Você precisa estar logado para acessar o blog e interagir com o conteúdo.</p>
+      <a href="https://blogalirioneto.github.io/login.html" class="btn">
         <i class="fas fa-sign-in-alt"></i>
         Fazer Login
-      </button>
+      </a>
     </div>
 
     <footer class="footer">
@@ -502,6 +579,7 @@
     const db = firebase.database();
 
     // Elementos do DOM
+    const pageLoading = document.getElementById('page-loading');
     const blogContent = document.getElementById('blog-content');
     const authRequired = document.getElementById('auth-required');
     const userInfo = document.getElementById('user-info');
@@ -520,9 +598,24 @@
 
     // Variável para armazenar usuário atual
     let currentUser = null;
+    let authChecked = false;
+
+    // Função para esconder loading
+    function hidePageLoading() {
+      if (pageLoading) {
+        setTimeout(() => {
+          pageLoading.classList.add('hidden');
+          setTimeout(() => {
+            pageLoading.style.display = 'none';
+          }, 500);
+        }, 800);
+      }
+    }
 
     // Verificar autenticação
     auth.onAuthStateChanged((user) => {
+      authChecked = true;
+      
       if (user) {
         currentUser = user;
         showBlogContent();
@@ -532,10 +625,14 @@
         if (!emailCommentInput.value) {
           emailCommentInput.value = user.email;
         }
+        console.log('Usuário autenticado:', user.email);
       } else {
         currentUser = null;
         showAuthRequired();
+        console.log('Usuário não autenticado');
       }
+      
+      hidePageLoading();
     });
 
     function showBlogContent() {
@@ -550,18 +647,17 @@
       userInfo.style.display = 'none';
     }
 
-    function redirectToLogin() {
-      // Aqui você pode implementar o redirecionamento para a página de login
-      // ou mostrar um modal de login
-      alert('Redirecionando para página de login...');
-    }
-
     function logout() {
-      auth.signOut().then(() => {
-        console.log('Logout realizado com sucesso');
-      }).catch((error) => {
-        console.error('Erro ao fazer logout:', error);
-      });
+      if (confirm('Tem certeza que deseja sair?')) {
+        auth.signOut().then(() => {
+          console.log('Logout realizado com sucesso');
+          // Opcional: redirecionar para página de login após logout
+          // window.location.href = 'https://blogalirioneto.github.io/login.html';
+        }).catch((error) => {
+          console.error('Erro ao fazer logout:', error);
+          alert('Erro ao fazer logout. Tente novamente.');
+        });
+      }
     }
 
     // Configurar data do post
@@ -687,7 +783,7 @@
                 <i class="fas fa-user-circle"></i>
                 ${comment.nome}
               </div>
-              <div class="comment-time">
+              <div class="comment-time" data-timestamp="${comment.timestamp}">
                 ${formatTime(comment.timestamp)}
               </div>
             </div>
@@ -763,6 +859,15 @@
       const currentYear = new Date().getFullYear();
       console.log(`Blog inicializado em ${currentYear}`);
     });
+
+    // Verificar se há erro de conexão e mostrar fallback
+    setTimeout(() => {
+      if (!authChecked) {
+        console.log('Timeout na verificação de autenticação');
+        hidePageLoading();
+        showAuthRequired();
+      }
+    }, 10000); // 10 segundos timeout
 
     console.log('Sistema de blog com Firebase Auth inicializado');
     console.log('Desenvolvido por Alírio Neto');
