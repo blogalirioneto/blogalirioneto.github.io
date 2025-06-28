@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Com Apenas Um Celular | Blog</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      line-height: 1.6;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+      font-weight: 800;
+    }
+
+    .header p {
+      color: #666;
+      font-size: 1.1em;
+      opacity: 0.8;
+    }
+
+    .blog-post {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .blog-post:hover {
+      transform: translateY(-5px);
+    }
+
+    .post-meta {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .post-meta i {
+      margin-right: 8px;
+      color: #667eea;
+    }
+
+    .post-content h2 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 1.8em;
+    }
+
+    .post-content p {
+      margin-bottom: 15px;
+      color: #555;
+      line-height: 1.8;
+    }
+
+    .comments-section {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .comments-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .comments-header i {
+      margin-right: 10px;
+      color: #667eea;
+    }
+
+    .comment-form {
+      margin-bottom: 30px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #f8f9fa;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #667eea;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .comments-list {
+      max-height: 600px;
+      overflow-y: auto;
+    }
+
+    .comment {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+      transition: all 0.3s ease;
+    }
+
+    .comment:hover {
+      background: #e9ecef;
+      transform: translateX(5px);
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .comment-author {
+      font-weight: 600;
+      color: #333;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .comment-author i {
+      color: #667eea;
+    }
+
+    .comment-time {
+      color: #666;
+      font-size: 0.85em;
+    }
+
+    .comment-text {
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #667eea;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #c3e6cb;
+      display: none;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #f5c6cb;
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 15px;
+      }
+      
+      .header {
+        padding: 30px 20px;
+      }
+      
+      .header h1 {
+        font-size: 2em;
+      }
+      
+      .blog-post, .comments-section {
+        padding: 25px 20px;
+      }
+    }
+    .footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    margin-top: auto;
+}
+
+.footer-content {
+  background-color: #711ca1;
+    color: white;
+    padding: 20px 40px;
+    margin-top: auto;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: black, 100px;
+}
+
+.footer-content p {
+    font-size: 14px;
+    line-height: 1.5;
+    opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+    section {
+        margin: 10px;
+        padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1><i class="fas fa-mobile-alt"></i> Com Apenas Um Celular</h1>
+     <p id="usuario-logado" style="margin-top: 10px; font-size: 0.9em; color: #555;"></p>
+      <p>Transformando ideias em realidade com a tecnologia na palma da mão</p>
+    </header>
+
+    <article class="blog-post">
+      <div class="post-meta">
+        <i class="fas fa-calendar-alt"></i>
+        <span id="post-date"></span>
+        <i class="fas fa-user" style="margin-left: 20px;"></i>
+        <span>Admin</span>
+      </div>
+      <div class="post-content">
+        <h2>Bem-vindos ao nosso blog!</h2>
+        <p>Este é um espaço dedicado a explorar as infinitas possibilidades que temos literalmente na palma das nossas mãos. Com apenas um celular, podemos criar, aprender, conectar e transformar ideias em realidade.</p>
+        <p>Aqui compartilharemos dicas, tutoriais, reflexões e descobertas sobre como maximizar o potencial dos nossos dispositivos móveis. Desde desenvolvimento de apps até fotografia, produtividade e empreendedorismo digital.</p>
+        <p>Deixe seu comentário abaixo e faça parte dessa comunidade de pessoas que acreditam no poder da tecnologia móvel!</p>
+      </div>
+    </article>
+
+    <section class="comments-section">
+      <h3 class="comments-header">
+        <i class="fas fa-comments"></i>
+        Comentários (<span id="comment-count">0</span>)
+      </h3>
+
+      <div class="success-message" id="success-message">
+        <i class="fas fa-check-circle"></i> Comentário enviado com sucesso!
+      </div>
+
+      <div class="error-message" id="error-message">
+        <i class="fas fa-exclamation-triangle"></i> Erro ao enviar comentário. Tente novamente.
+      </div>
+
+      <form class="comment-form" id="comment-form">
+        <div class="form-group">
+          <label for="nome">
+            <i class="fas fa-user"></i> Nome *
+          </label>
+          <input 
+            type="text" 
+            id="nome" 
+            class="form-control" 
+            placeholder="Digite seu nome..."
+            required
+            maxlength="50"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="email">
+            <i class="fas fa-envelope"></i> Email (opcional)
+          </label>
+          <input 
+            type="email" 
+            id="email" 
+            class="form-control" 
+            placeholder="seu@email.com"
+            maxlength="100"
+          >
+        </div>
+
+        <div class="form-group">
+          <label for="mensagem">
+            <i class="fas fa-comment"></i> Mensagem *
+          </label>
+          <textarea 
+            id="mensagem" 
+            class="form-control" 
+            rows="4" 
+            placeholder="Escreva seu comentário aqui..."
+            required
+            maxlength="500"
+          ></textarea>
+          <small style="color: #666; float: right; margin-top: 5px;">
+            <span id="char-count">0</span>/500 caracteres
+          </small>
+        </div>
+
+        <button type="submit" class="btn" id="submit-btn">
+          <i class="fas fa-paper-plane"></i>
+          Enviar Comentário
+        </button>
+      </form>
+
+      <div class="loading" id="loading" style="display: none;">
+        <div class="spinner"></div>
+        Carregando comentários...
+      </div>
+
+      <div class="comments-list" id="comentarios"></div>
+    </section>
+  </div>
+<main>
+  <section>
+    <footer>
+        <div class="footer-content">
+            <p>Blog modelo exemplo totalmente desenvolvido em um Celular por Alírio Neto</p>
+        </div>
+        <button onclick="logout()" class="btn" style="margin-top: 20px;">
+  Sair
+</button>
+    </footer>
+  </section>
+</main>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA6VyRYNjWiDLQ5__jnAOVP-7UhjWXo0uQ",
+      authDomain: "comapenasumcelular.firebaseapp.com",
+      databaseURL: "https://comapenasumcelular-default-rtdb.firebaseio.com",
+      projectId: "comapenasumcelular",
+      storageBucket: "comapenasumcelular.firebasestorage.app",
+      messagingSenderId: "356283121640",
+      appId: "1:356283121640:web:bbe203824624a34a6eae5d"
+    };
+
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+// Verifica se o usuário está logado
+auth.onAuthStateChanged((user) => {
+  if (!user) {
+    window.location.href = "login.html"; // Redireciona se não estiver logado
+  document.getElementById("usuario-logado").textContent = `Logado como: ${user.email}`;
+    
+  } else {
+    console.log("Usuário logado:", user.email);
+  }
+});
+    const db = firebase.database();
+
+    const form = document.getElementById('comment-form');
+    const nomeInput = document.getElementById('nome');
+    const emailInput = document.getElementById('email');
+    const mensagemInput = document.getElementById('mensagem');
+    const submitBtn = document.getElementById('submit-btn');
+    const comentariosDiv = document.getElementById('comentarios');
+    const loadingDiv = document.getElementById('loading');
+    const successMessage = document.getElementById('success-message');
+    const errorMessage = document.getElementById('error-message');
+    const commentCount = document.getElementById('comment-count');
+    const charCount = document.getElementById('char-count');
+
+    document.getElementById('post-date').textContent = new Date().toLocaleDateString('pt-BR');
+
+    mensagemInput.addEventListener('input', function() {
+      charCount.textContent = this.value.length;
+    });
+
+    function showMessage(type, duration = 3000) {
+      const messageEl = type === 'success' ? successMessage : errorMessage;
+      messageEl.style.display = 'block';
+      setTimeout(() => {
+        messageEl.style.display = 'none';
+      }, duration);
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+
+    function sanitizeText(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatTime(timestamp) {
+      const now = new Date();
+      const commentTime = new Date(timestamp);
+      const diffInMinutes = Math.floor((now - commentTime) / (1000 * 60));
+      
+      if (diffInMinutes < 1) return 'Agora mesmo';
+      if (diffInMinutes < 60) return `${diffInMinutes}min atrás`;
+      
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      if (diffInHours < 24) return `${diffInHours}h atrás`;
+      
+      const diffInDays = Math.floor(diffInHours / 24);
+      if (diffInDays < 7) return `${diffInDays}d atrás`;
+      
+      return commentTime.toLocaleDateString('pt-BR');
+    }
+
+    async function enviarComentario(e) {
+      e.preventDefault();
+      
+      const nome = nomeInput.value.trim();
+      const email = emailInput.value.trim();
+      const mensagem = mensagemInput.value.trim();
+
+      if (!nome || !mensagem) {
+        showMessage('error');
+        return;
+      }
+
+      if (email && !isValidEmail(email)) {
+        showMessage('error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+      try {
+        await db.ref("comentarios").push({
+          nome: sanitizeText(nome),
+          email: email ? sanitizeText(email) : '',
+          mensagem: sanitizeText(mensagem),
+          timestamp: Date.now(),
+          ip: 'hidden' 
+        });
+
+
+        form.reset();
+        charCount.textContent = '0';
+        showMessage('success');
+
+      } catch (error) {
+        console.error('Erro ao enviar comentário:', error);
+        showMessage('error');
+      } finally {
+
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Comentário';
+      }
+    }
+
+    function carregarComentarios() {
+      loadingDiv.style.display = 'block';
+      
+      db.ref("comentarios").orderByChild("timestamp").on("value", (snapshot) => {
+        comentariosDiv.innerHTML = "";
+        loadingDiv.style.display = 'none';
+        
+        const comments = [];
+        snapshot.forEach((childSnapshot) => {
+          comments.push({
+            key: childSnapshot.key,
+            ...childSnapshot.val()
+          });
+        });
+
+        comments.sort((a, b) => b.timestamp - a.timestamp);
+        
+
+        commentCount.textContent = comments.length;
+
+
+        comments.forEach((comment) => {
+          const div = document.createElement("div");
+          div.className = "comment";
+          div.innerHTML = `
+            <div class="comment-header">
+              <div class="comment-author">
+                <i class="fas fa-user-circle"></i>
+                ${comment.nome}
+              </div>
+              <div class="comment-time">
+                ${formatTime(comment.timestamp)}
+              </div>
+            </div>
+            <div class="comment-text">
+              ${comment.mensagem}
+            </div>
+          `;
+          comentariosDiv.appendChild(div);
+        });
+
+        if (comments.length === 0) {
+          comentariosDiv.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #666;">
+              <i class="fas fa-comments" style="font-size: 3em; margin-bottom: 15px; opacity: 0.3;"></i>
+              <p>Seja o primeiro a comentar!</p>
+            </div>
+          `;
+        }
+      }, (error) => {
+        console.error('Erro ao carregar comentários:', error);
+        loadingDiv.style.display = 'none';
+        showMessage('error');
+      });
+    }
+
+    form.addEventListener('submit', enviarComentario);
+
+    carregarComentarios();
+
+    setInterval(() => {
+      const timeElements = document.querySelectorAll('.comment-time');
+      timeElements.forEach(el => {
+        const timestamp = parseInt(el.dataset.timestamp);
+        if (timestamp) {
+          el.textContent = formatTime(timestamp);
+        }
+      });
+    }, 60000);
+  </script>
+  <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Footer carregado com sucesso!');
+    
+    const footer = document.querySelector('footer');
+    const footerContent = document.querySelector('.footer-content');
+    
+    if (footer && footerContent) {
+        footer.addEventListener('mouseenter', function() {
+            footerContent.style.transition = 'transform 0.3s ease';
+            footerContent.style.transform = 'scale(1.02)';
+        });
+        
+        footer.addEventListener('mouseleave', function() {
+            footerContent.style.transform = 'scale(1)';
+        });
+    }
+
+    function animateFooter() {
+        if (footer) {
+            footer.style.opacity = '0';
+            footer.style.transform = 'translateY(50px)';
+            footer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            
+            setTimeout(() => {
+                footer.style.opacity = '1';
+                footer.style.transform = 'translateY(0)';
+            }, 300);
+        }
+    }
+    
+    animateFooter();
+    
+    const currentYear = new Date().getFullYear();
+    console.log(`Footer inicializado em ${currentYear}`);
+});
+    function logout() {
+  auth.signOut().then(() => {
+    window.location.href = "login.html";
+  });
+}
+  </script>
+</body>
+</html>
