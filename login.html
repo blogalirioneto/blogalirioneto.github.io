@@ -340,7 +340,8 @@
             try {
                 const userCredential = await auth.signInWithEmailAndPassword(email, password);
                 currentUser = userCredential.user;
-                window.location.href = "blog.html";
+                showUserArea();
+                showMessage('Login realizado com sucesso!');
             } catch (error) {
                 handleAuthError(error);
             }
@@ -455,7 +456,10 @@
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                showUserArea();
+                // Redireciona para o blog após login bem-sucedido
+                setTimeout(() => {
+                    window.location.href = 'blog.html';
+                }, 1500);
             } else {
                 currentUser = null;
                 showLoginForm();
