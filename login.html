@@ -129,6 +129,17 @@
             color: #4facfe;
         }
 
+        .btn-success {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
         .btn-danger {
             background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
             color: white;
@@ -200,6 +211,36 @@
             display: none;
         }
 
+        .redirect-message {
+            text-align: center;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            color: #00b894;
+        }
+
+        .redirect-message i {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4facfe;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 10px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         @media (max-width: 480px) {
             .container {
                 margin: 10px;
@@ -210,12 +251,13 @@
             }
         }
     </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Blog Login</h1>
-            <p>Sistema desenvolvido por Alírio Neto</p>
+            <h1><i class="fas fa-mobile-alt"></i> Blog Login</h1>
+            <p>Com Apenas Um Celular - Sistema desenvolvido por Alírio Neto</p>
         </div>
 
         <!-- Formulário de Login -->
@@ -225,22 +267,26 @@
 
             <form id="authForm">
                 <div class="form-group">
-                    <label for="email">E-mail</label>
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> E-mail
+                    </label>
                     <input type="email" id="email" required placeholder="seu@email.com">
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Senha</label>
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Senha
+                    </label>
                     <input type="password" id="password" required placeholder="Sua senha">
                 </div>
 
                 <button type="submit" class="btn btn-primary" id="submitBtn">
-                    Entrar
+                    <i class="fas fa-sign-in-alt"></i> Entrar
                 </button>
             </form>
 
             <button type="button" class="btn btn-secondary" id="toggleBtn">
-                Criar conta
+                <i class="fas fa-user-plus"></i> Criar conta
             </button>
 
             <div class="toggle-form">
@@ -252,11 +298,20 @@
         <!-- Área do usuário logado -->
         <div id="userArea" class="form-container hidden">
             <div class="user-info">
-                <h2>Bem-vindo!</h2>
-                <p id="userEmail"></p>
-                <p>Login realizado com sucesso!</p>
+                <div class="redirect-message">
+                    <i class="fas fa-check-circle"></i>
+                    <h2>Login realizado com sucesso!</h2>
+                    <p id="userEmail"></p>
+                    <div class="spinner"></div>
+                    <p>Redirecionando para o blog...</p>
+                </div>
+                
+                <button type="button" class="btn btn-success" id="goToBlogBtn">
+                    <i class="fas fa-blog"></i> Ir para o Blog
+                </button>
+                
                 <button type="button" class="btn btn-danger" id="logoutBtn">
-                    Sair
+                    <i class="fas fa-sign-out-alt"></i> Sair
                 </button>
             </div>
         </div>
@@ -267,7 +322,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
 
     <script>
-        // Configuração do Firebase
+        // Configuração do Firebase (mesma configuração do blog)
         const firebaseConfig = {
             apiKey: "AIzaSyBauGgt1pm-sBas75N40ufWRsGD6c4BsgM",
             authDomain: "sistema-de-login-blog.firebaseapp.com",
@@ -295,10 +350,14 @@
         const successMessage = document.getElementById('successMessage');
         const userEmail = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
+        const goToBlogBtn = document.getElementById('goToBlogBtn');
 
         // Estado da aplicação
         let isLoginMode = true;
         let currentUser = null;
+
+        // URL do blog
+        const BLOG_URL = 'https://blogalirioneto.github.io/blog.html';
 
         // Função para mostrar mensagens
         function showMessage(message, isError = false) {
@@ -323,13 +382,13 @@
             hideMessages();
             
             if (isLoginMode) {
-                submitBtn.textContent = 'Entrar';
-                toggleBtn.textContent = 'Criar conta';
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar';
+                toggleBtn.innerHTML = '<i class="fas fa-user-plus"></i> Criar conta';
                 toggleText.textContent = 'Não tem conta? ';
                 toggleLink.textContent = 'Cadastre-se aqui';
             } else {
-                submitBtn.textContent = 'Cadastrar';
-                toggleBtn.textContent = 'Fazer login';
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Cadastrar';
+                toggleBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Fazer login';
                 toggleText.textContent = 'Já tem conta? ';
                 toggleLink.textContent = 'Faça login aqui';
             }
@@ -342,6 +401,12 @@
                 currentUser = userCredential.user;
                 showUserArea();
                 showMessage('Login realizado com sucesso!');
+                
+                // Redirecionar após 2 segundos
+                setTimeout(() => {
+                    redirectToBlog();
+                }, 2000);
+                
             } catch (error) {
                 handleAuthError(error);
             }
@@ -354,9 +419,20 @@
                 currentUser = userCredential.user;
                 showUserArea();
                 showMessage('Conta criada com sucesso!');
+                
+                // Redirecionar após 2 segundos
+                setTimeout(() => {
+                    redirectToBlog();
+                }, 2000);
+                
             } catch (error) {
                 handleAuthError(error);
             }
+        }
+
+        // Função para redirecionar para o blog
+        function redirectToBlog() {
+            window.location.href = BLOG_URL;
         }
 
         // Função para tratar erros de autenticação
@@ -382,11 +458,15 @@
                 case 'auth/too-many-requests':
                     message = 'Muitas tentativas. Tente novamente mais tarde';
                     break;
+                case 'auth/network-request-failed':
+                    message = 'Erro de conexão. Verifique sua internet';
+                    break;
                 default:
-                    message = error.message;
+                    message = `Erro: ${error.message}`;
             }
             
             showMessage(message, true);
+            console.error('Erro de autenticação:', error);
         }
 
         // Função para mostrar área do usuário logado
@@ -414,8 +494,10 @@
                 emailInput.value = '';
                 passwordInput.value = '';
                 showMessage('Logout realizado com sucesso!');
+                console.log('Logout realizado com sucesso');
             } catch (error) {
                 showMessage('Erro ao fazer logout', true);
+                console.error('Erro ao fazer logout:', error);
             }
         }
 
@@ -430,10 +512,16 @@
                 showMessage('Preencha todos os campos', true);
                 return;
             }
+
+            if (password.length < 6) {
+                showMessage('A senha deve ter pelo menos 6 caracteres', true);
+                return;
+            }
             
             // Mostrar loading
             submitBtn.classList.add('loading');
-            submitBtn.textContent = 'Processando...';
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
             
             try {
                 if (isLoginMode) {
@@ -444,31 +532,76 @@
             } finally {
                 // Remover loading
                 submitBtn.classList.remove('loading');
-                submitBtn.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+                submitBtn.innerHTML = originalText;
             }
         });
 
         toggleBtn.addEventListener('click', toggleMode);
         toggleLink.addEventListener('click', toggleMode);
         logoutBtn.addEventListener('click', logoutUser);
+        goToBlogBtn.addEventListener('click', redirectToBlog);
 
         // Monitorar estado de autenticação
         auth.onAuthStateChanged((user) => {
             if (user) {
                 currentUser = user;
-                // Redireciona para o blog após login bem-sucedido
-                setTimeout(() => {
-                    window.location.href = 'blog.html';
-                }, 1500);
+                console.log('Usuário autenticado:', user.email);
+                
+                // Se o usuário já está logado, mostrar área do usuário
+                // mas sem redirecionamento automático (para permitir logout)
+                if (!userArea.classList.contains('hidden')) {
+                    return; // Já está na área do usuário
+                }
+                
+                // Verificar se veio de uma tentativa de login
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromLogin = urlParams.get('from') === 'login';
+                
+                if (fromLogin) {
+                    showUserArea();
+                    setTimeout(() => {
+                        redirectToBlog();
+                    }, 1500);
+                }
+                
             } else {
                 currentUser = null;
                 showLoginForm();
+                console.log('Usuário não autenticado');
             }
         });
 
+        // Verificar se há parâmetros na URL
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const returnUrl = urlParams.get('return');
+            const message = urlParams.get('message');
+            
+            if (message) {
+                showMessage(decodeURIComponent(message), message.includes('erro'));
+            }
+            
+            if (returnUrl) {
+                console.log('URL de retorno:', returnUrl);
+            }
+        });
+
+        // Verificar se veio do blog com erro de autenticação
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === 'auth_required') {
+            showMessage('Você precisa fazer login para acessar o blog', true);
+        }
+
         // Inicialização
         console.log('Sistema de login Firebase inicializado');
+        console.log('Conectado ao blog:', BLOG_URL);
         console.log('Desenvolvido por Alírio Neto');
+        
+        // Limpar URL após carregar
+        if (window.location.search) {
+            const cleanUrl = window.location.origin + window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+        }
     </script>
 </body>
 </html>
