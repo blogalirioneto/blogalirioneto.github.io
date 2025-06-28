@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Com Apenas Um Celular | Blog</title>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-database-compat.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     * {
@@ -37,6 +37,7 @@
       padding: 40px;
       border-radius: 20px;
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
 
     .header h1 {
@@ -53,6 +54,35 @@
       color: #666;
       font-size: 1.1em;
       opacity: 0.8;
+    }
+
+    .user-info {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 20px;
+      font-size: 0.85em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      margin-left: 10px;
+      padding: 5px;
+      border-radius: 50%;
+      transition: background 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .blog-post {
@@ -263,6 +293,49 @@
       display: none;
     }
 
+    .footer {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      margin-top: 40px;
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .footer-content {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px 40px;
+      text-align: center;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer-content p {
+      font-size: 14px;
+      line-height: 1.5;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    .auth-required {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 40px;
+      border-radius: 20px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-required h2 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+
+    .auth-required p {
+      color: #666;
+      margin-bottom: 30px;
+    }
+
     @media (max-width: 768px) {
       .container {
         padding: 15px;
@@ -275,179 +348,167 @@
       .header h1 {
         font-size: 2em;
       }
+
+      .user-info {
+        position: static;
+        margin: 15px 0 0 0;
+        justify-content: center;
+      }
       
       .blog-post, .comments-section {
         padding: 25px 20px;
       }
-    }
-    .footer {
-    background-color: #333;
-    color: white;
-    padding: 20px 0;
-    margin-top: auto;
-}
 
-.footer-content {
-  background-color: #711ca1;
-    color: white;
-    padding: 20px 40px;
-    margin-top: auto;
-    text-align: center;
-    border-radius: 10px;
-    box-shadow: black, 100px;
-}
-
-.footer-content p {
-    font-size: 14px;
-    line-height: 1.5;
-    opacity: 0.9;
-}
-
-@media (max-width: 768px) {
-    section {
-        margin: 10px;
-        padding: 20px;
+      .footer-content {
+        padding: 20px 15px;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header class="header">
+      <div class="user-info" id="user-info" style="display: none;">
+        <i class="fas fa-user-circle"></i>
+        <span id="user-email"></span>
+        <button class="logout-btn" onclick="logout()" title="Sair">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
       <h1><i class="fas fa-mobile-alt"></i> Com Apenas Um Celular</h1>
-     <p id="usuario-logado" style="margin-top: 10px; font-size: 0.9em; color: #555;"></p>
       <p>Transformando ideias em realidade com a tecnologia na palma da mão</p>
     </header>
 
-    <article class="blog-post">
-      <div class="post-meta">
-        <i class="fas fa-calendar-alt"></i>
-        <span id="post-date"></span>
-        <i class="fas fa-user" style="margin-left: 20px;"></i>
-        <span>Admin</span>
-      </div>
-      <div class="post-content">
-        <h2>Bem-vindos ao nosso blog!</h2>
-        <p>Este é um espaço dedicado a explorar as infinitas possibilidades que temos literalmente na palma das nossas mãos. Com apenas um celular, podemos criar, aprender, conectar e transformar ideias em realidade.</p>
-        <p>Aqui compartilharemos dicas, tutoriais, reflexões e descobertas sobre como maximizar o potencial dos nossos dispositivos móveis. Desde desenvolvimento de apps até fotografia, produtividade e empreendedorismo digital.</p>
-        <p>Deixe seu comentário abaixo e faça parte dessa comunidade de pessoas que acreditam no poder da tecnologia móvel!</p>
-      </div>
-    </article>
+    <div id="blog-content" style="display: none;">
+      <article class="blog-post">
+        <div class="post-meta">
+          <i class="fas fa-calendar-alt"></i>
+          <span id="post-date"></span>
+          <i class="fas fa-user" style="margin-left: 20px;"></i>
+          <span>Admin</span>
+        </div>
+        <div class="post-content">
+          <h2>Bem-vindos ao nosso blog!</h2>
+          <p>Este é um espaço dedicado a explorar as infinitas possibilidades que temos literalmente na palma das nossas mãos. Com apenas um celular, podemos criar, aprender, conectar e transformar ideias em realidade.</p>
+          <p>Aqui compartilharemos dicas, tutoriais, reflexões e descobertas sobre como maximizar o potencial dos nossos dispositivos móveis. Desde desenvolvimento de apps até fotografia, produtividade e empreendedorismo digital.</p>
+          <p>Deixe seu comentário abaixo e faça parte dessa comunidade de pessoas que acreditam no poder da tecnologia móvel!</p>
+        </div>
+      </article>
 
-    <section class="comments-section">
-      <h3 class="comments-header">
-        <i class="fas fa-comments"></i>
-        Comentários (<span id="comment-count">0</span>)
-      </h3>
+      <section class="comments-section">
+        <h3 class="comments-header">
+          <i class="fas fa-comments"></i>
+          Comentários (<span id="comment-count">0</span>)
+        </h3>
 
-      <div class="success-message" id="success-message">
-        <i class="fas fa-check-circle"></i> Comentário enviado com sucesso!
-      </div>
-
-      <div class="error-message" id="error-message">
-        <i class="fas fa-exclamation-triangle"></i> Erro ao enviar comentário. Tente novamente.
-      </div>
-
-      <form class="comment-form" id="comment-form">
-        <div class="form-group">
-          <label for="nome">
-            <i class="fas fa-user"></i> Nome *
-          </label>
-          <input 
-            type="text" 
-            id="nome" 
-            class="form-control" 
-            placeholder="Digite seu nome..."
-            required
-            maxlength="50"
-          >
+        <div class="success-message" id="success-message">
+          <i class="fas fa-check-circle"></i> Comentário enviado com sucesso!
         </div>
 
-        <div class="form-group">
-          <label for="email">
-            <i class="fas fa-envelope"></i> Email (opcional)
-          </label>
-          <input 
-            type="email" 
-            id="email" 
-            class="form-control" 
-            placeholder="seu@email.com"
-            maxlength="100"
-          >
+        <div class="error-message" id="error-message">
+          <i class="fas fa-exclamation-triangle"></i> Erro ao enviar comentário. Tente novamente.
         </div>
 
-        <div class="form-group">
-          <label for="mensagem">
-            <i class="fas fa-comment"></i> Mensagem *
-          </label>
-          <textarea 
-            id="mensagem" 
-            class="form-control" 
-            rows="4" 
-            placeholder="Escreva seu comentário aqui..."
-            required
-            maxlength="500"
-          ></textarea>
-          <small style="color: #666; float: right; margin-top: 5px;">
-            <span id="char-count">0</span>/500 caracteres
-          </small>
+        <form class="comment-form" id="comment-form">
+          <div class="form-group">
+            <label for="nome">
+              <i class="fas fa-user"></i> Nome *
+            </label>
+            <input 
+              type="text" 
+              id="nome" 
+              class="form-control" 
+              placeholder="Digite seu nome..."
+              required
+              maxlength="50"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="email-comment">
+              <i class="fas fa-envelope"></i> Email (opcional)
+            </label>
+            <input 
+              type="email" 
+              id="email-comment" 
+              class="form-control" 
+              placeholder="seu@email.com"
+              maxlength="100"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="mensagem">
+              <i class="fas fa-comment"></i> Mensagem *
+            </label>
+            <textarea 
+              id="mensagem" 
+              class="form-control" 
+              rows="4" 
+              placeholder="Escreva seu comentário aqui..."
+              required
+              maxlength="500"
+            ></textarea>
+            <small style="color: #666; float: right; margin-top: 5px;">
+              <span id="char-count">0</span>/500 caracteres
+            </small>
+          </div>
+
+          <button type="submit" class="btn" id="submit-btn">
+            <i class="fas fa-paper-plane"></i>
+            Enviar Comentário
+          </button>
+        </form>
+
+        <div class="loading" id="loading" style="display: none;">
+          <div class="spinner"></div>
+          Carregando comentários...
         </div>
 
-        <button type="submit" class="btn" id="submit-btn">
-          <i class="fas fa-paper-plane"></i>
-          Enviar Comentário
-        </button>
-      </form>
+        <div class="comments-list" id="comentarios"></div>
+      </section>
+    </div>
 
-      <div class="loading" id="loading" style="display: none;">
-        <div class="spinner"></div>
-        Carregando comentários...
+    <div id="auth-required" class="auth-required">
+      <h2><i class="fas fa-lock"></i> Acesso Restrito</h2>
+      <p>Você precisa estar logado para acessar o blog.</p>
+      <button class="btn" onclick="redirectToLogin()">
+        <i class="fas fa-sign-in-alt"></i>
+        Fazer Login
+      </button>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-content">
+        <p>Blog modelo exemplo totalmente desenvolvido em um Celular por Alírio Neto</p>
       </div>
-
-      <div class="comments-list" id="comentarios"></div>
-    </section>
-  </div>
-<main>
-  <section>
-    <footer>
-        <div class="footer-content">
-            <p>Blog modelo exemplo totalmente desenvolvido em um Celular por Alírio Neto</p>
-        </div>
-        <button onclick="logout()" class="btn" style="margin-top: 20px;">
-  Sair
-</button>
     </footer>
-  </section>
-</main>
+  </div>
+
   <script>
+    // Configuração do Firebase
     const firebaseConfig = {
-      apiKey: "AIzaSyA6VyRYNjWiDLQ5__jnAOVP-7UhjWXo0uQ",
-      authDomain: "comapenasumcelular.firebaseapp.com",
-      databaseURL: "https://comapenasumcelular-default-rtdb.firebaseio.com",
-      projectId: "comapenasumcelular",
-      storageBucket: "comapenasumcelular.firebasestorage.app",
-      messagingSenderId: "356283121640",
-      appId: "1:356283121640:web:bbe203824624a34a6eae5d"
+      apiKey: "AIzaSyBauGgt1pm-sBas75N40ufWRsGD6c4BsgM",
+      authDomain: "sistema-de-login-blog.firebaseapp.com",
+      projectId: "sistema-de-login-blog",
+      storageBucket: "sistema-de-login-blog.firebasestorage.app",
+      messagingSenderId: "416120877008",
+      appId: "1:416120877008:web:a5b0a26bec246d577a93d5"
     };
 
-
+    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-
-// Verifica se o usuário está logado
-auth.onAuthStateChanged((user) => {
-  if (!user) {
-    window.location.href = "login.html"; // Redireciona se não estiver logado
-  document.getElementById("usuario-logado").textContent = `Logado como: ${user.email}`;
-    
-  } else {
-    console.log("Usuário logado:", user.email);
-  }
-});
     const db = firebase.database();
 
+    // Elementos do DOM
+    const blogContent = document.getElementById('blog-content');
+    const authRequired = document.getElementById('auth-required');
+    const userInfo = document.getElementById('user-info');
+    const userEmail = document.getElementById('user-email');
     const form = document.getElementById('comment-form');
     const nomeInput = document.getElementById('nome');
-    const emailInput = document.getElementById('email');
+    const emailCommentInput = document.getElementById('email-comment');
     const mensagemInput = document.getElementById('mensagem');
     const submitBtn = document.getElementById('submit-btn');
     const comentariosDiv = document.getElementById('comentarios');
@@ -457,8 +518,56 @@ auth.onAuthStateChanged((user) => {
     const commentCount = document.getElementById('comment-count');
     const charCount = document.getElementById('char-count');
 
+    // Variável para armazenar usuário atual
+    let currentUser = null;
+
+    // Verificar autenticação
+    auth.onAuthStateChanged((user) => {
+      if (user) {
+        currentUser = user;
+        showBlogContent();
+        userEmail.textContent = user.email;
+        userInfo.style.display = 'flex';
+        // Pré-preencher o email no formulário de comentários se disponível
+        if (!emailCommentInput.value) {
+          emailCommentInput.value = user.email;
+        }
+      } else {
+        currentUser = null;
+        showAuthRequired();
+      }
+    });
+
+    function showBlogContent() {
+      blogContent.style.display = 'block';
+      authRequired.style.display = 'none';
+      carregarComentarios();
+    }
+
+    function showAuthRequired() {
+      blogContent.style.display = 'none';
+      authRequired.style.display = 'block';
+      userInfo.style.display = 'none';
+    }
+
+    function redirectToLogin() {
+      // Aqui você pode implementar o redirecionamento para a página de login
+      // ou mostrar um modal de login
+      alert('Redirecionando para página de login...');
+    }
+
+    function logout() {
+      auth.signOut().then(() => {
+        console.log('Logout realizado com sucesso');
+      }).catch((error) => {
+        console.error('Erro ao fazer logout:', error);
+      });
+    }
+
+    // Configurar data do post
     document.getElementById('post-date').textContent = new Date().toLocaleDateString('pt-BR');
 
+    // Contador de caracteres
     mensagemInput.addEventListener('input', function() {
       charCount.textContent = this.value.length;
     });
@@ -475,7 +584,6 @@ auth.onAuthStateChanged((user) => {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       return emailRegex.test(email);
     }
-
 
     function sanitizeText(text) {
       const div = document.createElement('div');
@@ -503,8 +611,13 @@ auth.onAuthStateChanged((user) => {
     async function enviarComentario(e) {
       e.preventDefault();
       
+      if (!currentUser) {
+        showMessage('error');
+        return;
+      }
+      
       const nome = nomeInput.value.trim();
-      const email = emailInput.value.trim();
+      const email = emailCommentInput.value.trim();
       const mensagem = mensagemInput.value.trim();
 
       if (!nome || !mensagem) {
@@ -526,25 +639,28 @@ auth.onAuthStateChanged((user) => {
           email: email ? sanitizeText(email) : '',
           mensagem: sanitizeText(mensagem),
           timestamp: Date.now(),
-          ip: 'hidden' 
+          userId: currentUser.uid,
+          userEmail: currentUser.email
         });
-
 
         form.reset();
         charCount.textContent = '0';
+        // Restaurar o email do usuário
+        emailCommentInput.value = currentUser.email;
         showMessage('success');
 
       } catch (error) {
         console.error('Erro ao enviar comentário:', error);
         showMessage('error');
       } finally {
-
         submitBtn.disabled = false;
         submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar Comentário';
       }
     }
 
     function carregarComentarios() {
+      if (!currentUser) return;
+      
       loadingDiv.style.display = 'block';
       
       db.ref("comentarios").orderByChild("timestamp").on("value", (snapshot) => {
@@ -560,10 +676,7 @@ auth.onAuthStateChanged((user) => {
         });
 
         comments.sort((a, b) => b.timestamp - a.timestamp);
-        
-
         commentCount.textContent = comments.length;
-
 
         comments.forEach((comment) => {
           const div = document.createElement("div");
@@ -600,10 +713,10 @@ auth.onAuthStateChanged((user) => {
       });
     }
 
+    // Event listeners
     form.addEventListener('submit', enviarComentario);
 
-    carregarComentarios();
-
+    // Atualizar timestamps a cada minuto
     setInterval(() => {
       const timeElements = document.querySelectorAll('.comment-time');
       timeElements.forEach(el => {
@@ -613,49 +726,46 @@ auth.onAuthStateChanged((user) => {
         }
       });
     }, 60000);
-  </script>
-  <script>
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('Footer carregado com sucesso!');
-    
-    const footer = document.querySelector('footer');
-    const footerContent = document.querySelector('.footer-content');
-    
-    if (footer && footerContent) {
+    // Animação do footer
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('Blog carregado com sucesso!');
+      
+      const footer = document.querySelector('.footer');
+      const footerContent = document.querySelector('.footer-content');
+      
+      if (footer && footerContent) {
         footer.addEventListener('mouseenter', function() {
-            footerContent.style.transition = 'transform 0.3s ease';
-            footerContent.style.transform = 'scale(1.02)';
+          footerContent.style.transition = 'transform 0.3s ease';
+          footerContent.style.transform = 'scale(1.02)';
         });
         
         footer.addEventListener('mouseleave', function() {
-            footerContent.style.transform = 'scale(1)';
+          footerContent.style.transform = 'scale(1)';
         });
-    }
+      }
 
-    function animateFooter() {
+      function animateFooter() {
         if (footer) {
-            footer.style.opacity = '0';
-            footer.style.transform = 'translateY(50px)';
-            footer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            
-            setTimeout(() => {
-                footer.style.opacity = '1';
-                footer.style.transform = 'translateY(0)';
-            }, 300);
+          footer.style.opacity = '0';
+          footer.style.transform = 'translateY(50px)';
+          footer.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+          
+          setTimeout(() => {
+            footer.style.opacity = '1';
+            footer.style.transform = 'translateY(0)';
+          }, 300);
         }
-    }
-    
-    animateFooter();
-    
-    const currentYear = new Date().getFullYear();
-    console.log(`Footer inicializado em ${currentYear}`);
-});
-    function logout() {
-  auth.signOut().then(() => {
-    window.location.href = "login.html";
-  });
-}
+      }
+      
+      animateFooter();
+      
+      const currentYear = new Date().getFullYear();
+      console.log(`Blog inicializado em ${currentYear}`);
+    });
+
+    console.log('Sistema de blog com Firebase Auth inicializado');
+    console.log('Desenvolvido por Alírio Neto');
   </script>
 </body>
 </html>
