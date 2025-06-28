@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Login - Blog</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+            animation: slideUp 0.8s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+
+        .form-container {
+            padding: 40px 30px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #666;
+            border: 2px solid #e1e5e9;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: #4facfe;
+            color: #4facfe;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 65, 108, 0.3);
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d63031;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #00b894;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #00b894;
+            font-size: 0.9rem;
+        }
+
+        .toggle-form {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .toggle-form button {
+            background: none;
+            border: none;
+            color: #4facfe;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .user-info {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .user-info h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .user-info p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .loading {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .form-container {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Blog Login</h1>
+            <p>Sistema desenvolvido por Alírio Neto</p>
+        </div>
+
+        <!-- Formulário de Login -->
+        <div id="loginForm" class="form-container">
+            <div id="errorMessage" class="error-message hidden"></div>
+            <div id="successMessage" class="success-message hidden"></div>
+
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" required placeholder="seu@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" required placeholder="Sua senha">
+                </div>
+
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Entrar
+                </button>
+            </form>
+
+            <button type="button" class="btn btn-secondary" id="toggleBtn">
+                Criar conta
+            </button>
+
+            <div class="toggle-form">
+                <span id="toggleText">Não tem conta? </span>
+                <button type="button" id="toggleLink">Cadastre-se aqui</button>
+            </div>
+        </div>
+
+        <!-- Área do usuário logado -->
+        <div id="userArea" class="form-container hidden">
+            <div class="user-info">
+                <h2>Bem-vindo!</h2>
+                <p id="userEmail"></p>
+                <p>Login realizado com sucesso!</p>
+                <button type="button" class="btn btn-danger" id="logoutBtn">
+                    Sair
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-app-compat.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/firebase/9.22.2/firebase-auth-compat.min.js"></script>
+
+    <script>
+        // Configuração do Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBauGgt1pm-sBas75N40ufWRsGD6c4BsgM",
+            authDomain: "sistema-de-login-blog.firebaseapp.com",
+            projectId: "sistema-de-login-blog",
+            storageBucket: "sistema-de-login-blog.firebasestorage.app",
+            messagingSenderId: "416120877008",
+            appId: "1:416120877008:web:a5b0a26bec246d577a93d5"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Elementos do DOM
+        const loginForm = document.getElementById('loginForm');
+        const userArea = document.getElementById('userArea');
+        const authForm = document.getElementById('authForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleBtn = document.getElementById('toggleBtn');
+        const toggleLink = document.getElementById('toggleLink');
+        const toggleText = document.getElementById('toggleText');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const userEmail = document.getElementById('userEmail');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Estado da aplicação
+        let isLoginMode = true;
+        let currentUser = null;
+
+        // Função para mostrar mensagens
+        function showMessage(message, isError = false) {
+            hideMessages();
+            if (isError) {
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            } else {
+                successMessage.textContent = message;
+                successMessage.classList.remove('hidden');
+            }
+        }
+
+        function hideMessages() {
+            errorMessage.classList.add('hidden');
+            successMessage.classList.add('hidden');
+        }
+
+        // Função para alternar entre login e cadastro
+        function toggleMode() {
+            isLoginMode = !isLoginMode;
+            hideMessages();
+            
+            if (isLoginMode) {
+                submitBtn.textContent = 'Entrar';
+                toggleBtn.textContent = 'Criar conta';
+                toggleText.textContent = 'Não tem conta? ';
+                toggleLink.textContent = 'Cadastre-se aqui';
+            } else {
+                submitBtn.textContent = 'Cadastrar';
+                toggleBtn.textContent = 'Fazer login';
+                toggleText.textContent = 'Já tem conta? ';
+                toggleLink.textContent = 'Faça login aqui';
+            }
+        }
+
+        // Função para fazer login
+        async function loginUser(email, password) {
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                window.location.href = "blog.html";
+            } catch (error) {
+                handleAuthError(error);
+            }
+        }
+
+        // Função para cadastrar usuário
+        async function registerUser(email, password) {
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                showUserArea();
+                showMessage('Conta criada com sucesso!');
+            } catch (error) {
+                handleAuthError(error);
+            }
+        }
+
+        // Função para tratar erros de autenticação
+        function handleAuthError(error) {
+            let message = 'Erro desconhecido';
+            
+            switch (error.code) {
+                case 'auth/user-not-found':
+                    message = 'Usuário não encontrado';
+                    break;
+                case 'auth/wrong-password':
+                    message = 'Senha incorreta';
+                    break;
+                case 'auth/email-already-in-use':
+                    message = 'Este e-mail já está em uso';
+                    break;
+                case 'auth/weak-password':
+                    message = 'Senha muito fraca. Use pelo menos 6 caracteres';
+                    break;
+                case 'auth/invalid-email':
+                    message = 'E-mail inválido';
+                    break;
+                case 'auth/too-many-requests':
+                    message = 'Muitas tentativas. Tente novamente mais tarde';
+                    break;
+                default:
+                    message = error.message;
+            }
+            
+            showMessage(message, true);
+        }
+
+        // Função para mostrar área do usuário logado
+        function showUserArea() {
+            loginForm.classList.add('hidden');
+            userArea.classList.remove('hidden');
+            if (currentUser) {
+                userEmail.textContent = currentUser.email;
+            }
+        }
+
+        // Função para mostrar formulário de login
+        function showLoginForm() {
+            userArea.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            hideMessages();
+        }
+
+        // Função para fazer logout
+        async function logoutUser() {
+            try {
+                await auth.signOut();
+                currentUser = null;
+                showLoginForm();
+                emailInput.value = '';
+                passwordInput.value = '';
+                showMessage('Logout realizado com sucesso!');
+            } catch (error) {
+                showMessage('Erro ao fazer logout', true);
+            }
+        }
+
+        // Event Listeners
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            
+            if (!email || !password) {
+                showMessage('Preencha todos os campos', true);
+                return;
+            }
+            
+            // Mostrar loading
+            submitBtn.classList.add('loading');
+            submitBtn.textContent = 'Processando...';
+            
+            try {
+                if (isLoginMode) {
+                    await loginUser(email, password);
+                } else {
+                    await registerUser(email, password);
+                }
+            } finally {
+                // Remover loading
+                submitBtn.classList.remove('loading');
+                submitBtn.textContent = isLoginMode ? 'Entrar' : 'Cadastrar';
+            }
+        });
+
+        toggleBtn.addEventListener('click', toggleMode);
+        toggleLink.addEventListener('click', toggleMode);
+        logoutBtn.addEventListener('click', logoutUser);
+
+        // Monitorar estado de autenticação
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                showUserArea();
+            } else {
+                currentUser = null;
+                showLoginForm();
+            }
+        });
+
+        // Inicialização
+        console.log('Sistema de login Firebase inicializado');
+        console.log('Desenvolvido por Alírio Neto');
+    </script>
+</body>
+</html>
